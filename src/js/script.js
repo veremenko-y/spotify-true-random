@@ -1,12 +1,13 @@
 const spotifyRandom = (() => {
-    const clientId = 'b61d28d1ed4c49e8ba5d2923ed367262';
-    const redirect = 'https://tomeraberba.ch/spotify-true-random';
+    const clientId = 'afa047fa901e464b81096aee27476c69';
+    const redirect = 'http://localhost';
     const scope = [
         'playlist-read-private',
         'playlist-read-collaborative',
         'user-modify-playback-state',
         'user-library-read',
-        'user-read-playback-state'
+        'user-read-playback-state',
+        'playlist-modify-private'
     ];
     const stateKey = 'state';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -192,6 +193,22 @@ const spotifyRandom = (() => {
         devices : cb => {
             spotify.setAccessToken(token());
             spotify.getMyDevices((err, data) => cb(data['devices'].filter(device => !device['is_restricted'])));
+        },
+        fill : tracks => {
+            let playlist = document.getElementById('playlists-select').value;
+            const id = playlist.split(':')[1];
+            spotify.setAccessToken(token());
+            let index = 0;
+            (function f() {
+                let insert = tracks.slice(index, index + 100);
+                if (insert.length == 0) {
+                    return;
+                }
+                spotify.addTracksToPlaylist(id, insert, { }, (err, data) => {
+                    index += 100;
+                    f();
+                });
+            })();
         },
         play : tracks => {
             const device = document.getElementById('devices-select').value;
